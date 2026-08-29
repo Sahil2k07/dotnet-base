@@ -5,11 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DotnetBase.Data;
 
-public static class DotnetMigrationData
+public static class DotnetBaseData
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddDotnetMigrationData()
+        public IServiceCollection AddDotnetBaseData()
         {
             #region Options
 
