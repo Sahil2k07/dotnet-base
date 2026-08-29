@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\DotnetBase.Contract\DotnetBase.Contract.csproj" />
+    <ProjectReference Include="..\DotnetBase.Data\DotnetBase.Data.csproj" />
+    <ProjectReference Include="..\DotnetBase.Shared\DotnetBase.Shared.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

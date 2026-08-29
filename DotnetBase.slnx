@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Apps/">
+    <Project Path="Apps/DotnetBase.Migrator/DotnetBase.Migrator.csproj" />
+    <Project Path="Apps/DotnetBase.Server/DotnetBase.Server.csproj" />
+  </Folder>
+  <Folder Name="/Libraries/">
+    <Project Path="Libraries/DotnetBase.Authentication/DotnetBase.Authentication.csproj" />
+    <Project Path="Libraries/DotnetBase.Contract/DotnetBase.Contract.csproj" />
+    <Project Path="Libraries/DotnetBase.Data/DotnetBase.Data.csproj" />
+    <Project Path="Libraries/DotnetBase.Service/DotnetBase.Service.csproj" />
+    <Project Path="Libraries/DotnetBase.Shared/DotnetBase.Shared.csproj" />
+  </Folder>
+</Solution>
