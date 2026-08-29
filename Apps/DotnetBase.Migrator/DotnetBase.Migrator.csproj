@@ -5,6 +5,14 @@
     <ProjectReference Include="..\..\Libraries\DotnetBase.Data\DotnetBase.Data.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Migrations\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
