@@ -1,0 +1,8 @@
+.vs
+.vscode
+bin
+obj
+.env
+.env.local
+.env.development
+.env.production
