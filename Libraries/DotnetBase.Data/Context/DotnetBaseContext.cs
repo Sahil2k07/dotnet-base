@@ -40,6 +40,8 @@ public sealed class DotnetBaseContext : DbContext
 
         modelBuilder.Entity<UserProfile>().HasQueryFilter(x => x.DeletedAt == null);
 
+        modelBuilder.Entity<UserSession>().HasQueryFilter(x => x.User.DeletedAt == null);
+
         modelBuilder.Entity<UserRole>().HasQueryFilter(x => x.DeletedAt == null);
 
         modelBuilder.Entity<Role>().HasQueryFilter(x => x.DeletedAt == null);

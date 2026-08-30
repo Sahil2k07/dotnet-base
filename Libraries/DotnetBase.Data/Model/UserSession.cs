@@ -25,5 +25,5 @@ public class UserSession
     public DateTime? RevokedAt { get; set; }
 
     [ForeignKey(nameof(UserId))]
-    public virtual User? User { get; set; }
+    public virtual User User { get; set; } = null!;
 }
