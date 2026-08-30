@@ -34,48 +34,24 @@ public sealed class MigrationRunner : IMigrationRunner
         var stopwatch = Stopwatch.StartNew();
 
         IReadOnlyList<MigrationFile> tables = await _fileService.GetMigrationFiles(
-            rootPath: "Migrations/Tables",
+            rootPath: "Migration/Table",
             fileType: "TABLE",
             throwOnChange: true
         );
 
         IReadOnlyList<MigrationFile> indexes = await _fileService.GetMigrationFiles(
-            rootPath: "Migrations/Indexes",
+            rootPath: "Migration/Index",
             fileType: "INDEX",
             throwOnChange: true
         );
 
-        IReadOnlyList<MigrationFile> views = await _fileService.GetMigrationFiles(
-            rootPath: "Migrations/Views",
-            fileType: "VIEW",
+        IReadOnlyList<MigrationFile> scripts = await _fileService.GetMigrationFiles(
+            rootPath: "Migration/Script",
+            fileType: "SCRIPT",
             throwOnChange: false
         );
 
-        IReadOnlyList<MigrationFile> functions = await _fileService.GetMigrationFiles(
-            rootPath: "Migrations/Functions",
-            fileType: "FUNCTION",
-            throwOnChange: false
-        );
-
-        IReadOnlyList<MigrationFile> procedures = await _fileService.GetMigrationFiles(
-            rootPath: "Migrations/Procedures",
-            fileType: "PROCEDURE",
-            throwOnChange: false
-        );
-
-        IReadOnlyList<MigrationFile> triggers = await _fileService.GetMigrationFiles(
-            rootPath: "Migrations/Triggers",
-            fileType: "TRIGGER",
-            throwOnChange: false
-        );
-
-        int totalPendingCount =
-            tables.Count
-            + indexes.Count
-            + views.Count
-            + functions.Count
-            + procedures.Count
-            + triggers.Count;
+        int totalPendingCount = tables.Count + indexes.Count + scripts.Count;
 
         _logger.LogInformation(
             "Migration SQL scripts read. Pending migrations: {Count}",
@@ -87,25 +63,18 @@ public sealed class MigrationRunner : IMigrationRunner
             {
                 await _migrationExecutor.ApplyMigration(tables);
                 await _migrationExecutor.ApplyMigration(indexes);
-                await _migrationExecutor.ApplyMigration(views);
-                await _migrationExecutor.ApplyMigration(functions);
-                await _migrationExecutor.ApplyMigration(procedures);
-                await _migrationExecutor.ApplyMigration(triggers);
+                await _migrationExecutor.ApplyMigration(scripts);
             }
         );
 
         _logger.LogInformation(
             "Migration completed successfully in {Elapsed}. Total: {Total} "
-                + "(Tables: {Tables}, Indexes: {Indexes}, Views: {Views}, "
-                + "Functions: {Functions}, Procedures: {Procedures}, Triggers: {Triggers})",
+                + "(Tables: {Tables}, Indexes: {Indexes}, Scripts: {Scripts}, ",
             FormatElapsedTime(stopwatch.Elapsed),
             totalPendingCount,
             tables.Count,
             indexes.Count,
-            views.Count,
-            functions.Count,
-            procedures.Count,
-            triggers.Count
+            scripts.Count
         );
     }
 

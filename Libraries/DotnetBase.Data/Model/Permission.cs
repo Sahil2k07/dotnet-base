@@ -1,0 +1,23 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace DotnetBase.Data.Model;
+
+[Table("PERMISSION", Schema = "dbo")]
+public sealed class Permission
+{
+    [Key]
+    public long Id { get; set; }
+
+    [MaxLength(100)]
+    public required string Name { get; set; }
+
+    [MaxLength(200)]
+    public string? Description { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? DeletedAt { get; set; } = null;
+}

@@ -1,0 +1,12 @@
+IF OBJECT_ID(N'dbo.USER', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[USER] 
+    (
+        Id           BIGINT PRIMARY KEY IDENTITY(1, 1),
+        Email        NVARCHAR(100) NOT NULL,
+        PasswordHash NVARCHAR(150) NOT NULL,
+        CreatedAt    DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        UpdatedAt    DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        DeleatedAt   DATETIME2 DEFAULT NULL
+    )
+END;
