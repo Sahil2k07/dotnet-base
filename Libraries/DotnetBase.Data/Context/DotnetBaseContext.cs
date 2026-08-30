@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using DotnetBase.Data.Configuration;
 using DotnetBase.Data.Model;
 using DotnetBase.Data.Model.Interface;
@@ -37,19 +38,30 @@ public sealed class DotnetBaseContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<User>().HasQueryFilter(x => x.DeletedAt == null);
+        #region Soft Delete
 
-        modelBuilder.Entity<UserProfile>().HasQueryFilter(x => x.DeletedAt == null);
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
+                continue;
+
+            var entity = modelBuilder.Entity(entityType.ClrType);
+
+            var parameter = Expression.Parameter(entityType.ClrType, "x");
+
+            var property = Expression.Property(parameter, nameof(ISoftDelete.DeletedAt));
+
+            var filter = Expression.Lambda(
+                Expression.Equal(property, Expression.Constant(null, typeof(DateTime?))),
+                parameter
+            );
+
+            entity.HasQueryFilter(filter);
+        }
+
+        #endregion
 
         modelBuilder.Entity<UserSession>().HasQueryFilter(x => x.User.DeletedAt == null);
-
-        modelBuilder.Entity<UserRole>().HasQueryFilter(x => x.DeletedAt == null);
-
-        modelBuilder.Entity<Role>().HasQueryFilter(x => x.DeletedAt == null);
-
-        modelBuilder.Entity<Permission>().HasQueryFilter(x => x.DeletedAt == null);
-
-        modelBuilder.Entity<RolePermission>().HasQueryFilter(x => x.DeletedAt == null);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

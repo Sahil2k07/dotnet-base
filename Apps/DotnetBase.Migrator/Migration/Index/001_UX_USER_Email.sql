@@ -8,5 +8,5 @@ IF NOT EXISTS
 BEGIN
     CREATE UNIQUE INDEX UX_User_Email
     ON [dbo].[USER] (Email)
-    WHERE DeleatedAt IS NULL;
+    WHERE DeletedAt IS NULL;
 END;
