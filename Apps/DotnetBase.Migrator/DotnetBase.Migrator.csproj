@@ -6,7 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Migrations\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Migration\**\*.sql" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

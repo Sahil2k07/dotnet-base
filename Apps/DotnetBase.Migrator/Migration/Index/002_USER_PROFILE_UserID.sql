@@ -1,0 +1,12 @@
+IF NOT EXISTS
+(
+    SELECT 1
+    FROM sys.indexes
+    WHERE name = N'UX_USER_PROFILE_UserID'
+    AND object_id = OBJECT_ID(N'dbo.[USER_PROFILE]')
+)
+BEGIN
+    CREATE UNIQUE INDEX UX_USER_PROFILE_UserID
+    ON [dbo].[USER_PROFILE](UserId)
+    WHERE DeletedAt IS NULL;
+END;
