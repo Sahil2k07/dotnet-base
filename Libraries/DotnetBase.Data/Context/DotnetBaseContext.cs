@@ -1,5 +1,6 @@
 using DotnetBase.Data.Configuration;
 using DotnetBase.Data.Model;
+using DotnetBase.Data.Model.Interface;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -49,6 +50,22 @@ public sealed class DotnetBaseContext : DbContext
         modelBuilder.Entity<Permission>().HasQueryFilter(x => x.DeletedAt == null);
 
         modelBuilder.Entity<RolePermission>().HasQueryFilter(x => x.DeletedAt == null);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ChangeTracker.DetectChanges();
+
+        foreach (var entry in ChangeTracker.Entries<ISoftDelete>())
+        {
+            if (entry.State == EntityState.Deleted)
+            {
+                entry.State = EntityState.Modified;
+                entry.Entity.DeletedAt = DateTime.UtcNow;
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

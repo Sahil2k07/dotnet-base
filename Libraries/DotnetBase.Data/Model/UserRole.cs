@@ -1,10 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using DotnetBase.Data.Model.Interface;
 
 namespace DotnetBase.Data.Model;
 
 [Table("USER_ROLE", Schema = "dbo")]
-public class UserRole
+public class UserRole : ISoftDelete
 {
     [Key]
     public long Id { get; set; }
