@@ -1,6 +1,6 @@
 namespace DotnetBase.Shared.Constant;
 
-public static class Role
+public static class Roles
 {
     public const string USER = "USER";
 
