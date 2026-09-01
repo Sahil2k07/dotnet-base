@@ -1,6 +1,6 @@
 namespace DotnetBase.Shared.Constant;
 
-public static class Permission
+public static class Permissions
 {
     public const string READ_ROLE = "role.read";
 
