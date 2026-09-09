@@ -10,8 +10,15 @@ public interface IAuthService
         CancellationToken cancellationToken = default
     );
 
+    Task<SigninResponse> SigninUser(
+        SigninRequest request,
+        CancellationToken cancellationToken = default
+    );
+
     Task<SigninResponse> RefreshAccessToken(
         string refreshToken,
         CancellationToken cancellationToken = default
     );
+
+    Task SignoutUser(string refreshToken, CancellationToken cancellationToken = default);
 }

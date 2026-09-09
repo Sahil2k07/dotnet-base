@@ -25,7 +25,6 @@ public sealed class CryptoService : ICryptoService
         {
             new(JwtRegisteredClaimNames.Sub, accessTokenClaims.UserId.ToString()),
             new("user_profile_id", accessTokenClaims.UserProfileId.ToString()),
-            new("active_role", accessTokenClaims.ActiveRole),
         };
 
         claims.AddRange(accessTokenClaims.Roles.Select(role => new Claim("roles", role)));
@@ -74,11 +73,7 @@ public sealed class CryptoService : ICryptoService
 
     public Task<(string, DateTime)> GenerateRefreshToken(RefreshTokenClaims refreshTokenClaims)
     {
-        var claims = new List<Claim>
-        {
-            new("session_id", refreshTokenClaims.SessionId.ToString()),
-            new("user_role_id", refreshTokenClaims.UserRoleId.ToString()),
-        };
+        var claims = new List<Claim> { new("session_id", refreshTokenClaims.SessionId.ToString()) };
 
         var signingKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_authenticationOptions.JwtSigningSecret)
@@ -158,8 +153,6 @@ public sealed class CryptoService : ICryptoService
 
         var userProfileId = long.Parse(principal.FindFirstValue("user_profile_id")!);
 
-        var activeRole = principal.FindFirstValue("active_role")!;
-
         var roles = principal.FindAll("roles").Select(x => x.Value).ToList();
 
         var permissions = principal.FindAll("permissions").Select(x => x.Value).ToList();
@@ -168,7 +161,6 @@ public sealed class CryptoService : ICryptoService
         {
             UserId = userId,
             UserProfileId = userProfileId,
-            ActiveRole = activeRole,
             Roles = roles,
             Permissions = permissions,
             ExpiresAt = validatedToken.ValidTo,
@@ -215,12 +207,9 @@ public sealed class CryptoService : ICryptoService
 
         var sessionId = Guid.Parse(principal.FindFirstValue("session_id")!);
 
-        var userRoleId = long.Parse(principal.FindFirstValue("user_role_id")!);
-
         var claims = new RefreshTokenClaims
         {
             SessionId = sessionId,
-            UserRoleId = userRoleId,
             ExpiresAt = validatedToken.ValidTo,
         };
 

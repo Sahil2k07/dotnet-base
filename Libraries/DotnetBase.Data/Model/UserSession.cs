@@ -12,8 +12,6 @@ public class UserSession : ISoftDelete
 
     public long UserId { get; set; }
 
-    public long UserRoleId { get; set; }
-
     public Guid DisplayId { get; set; } = Guid.NewGuid();
 
     [MaxLength(128)]
@@ -31,7 +29,4 @@ public class UserSession : ISoftDelete
 
     [ForeignKey(nameof(UserId))]
     public virtual User? User { get; set; }
-
-    [ForeignKey(nameof(UserRoleId))]
-    public virtual UserRole? UserRole { get; set; }
 }

@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using DotnetBase.Contract.Auth.Claims;
 using Microsoft.AspNetCore.Http;
 
 namespace DotnetBase.Authentication.Service.Implementation;
@@ -21,8 +22,6 @@ public sealed class CurrentUser : ICurrentUser
 
     public long UserProfileId => long.Parse(User.FindFirstValue("user_profile_id")!);
 
-    public string ActiveRole => User.FindFirstValue("active_role")!;
-
     public IReadOnlyList<string> Roles => [.. User.FindAll("roles").Select(claim => claim.Value)];
 
     public IReadOnlyList<string> Permissions =>
@@ -32,4 +31,21 @@ public sealed class CurrentUser : ICurrentUser
 
     public bool HasPermission(string permission) =>
         Permissions.Contains(permission, StringComparer.OrdinalIgnoreCase);
+
+    public DateTime ExpiresAt =>
+        User.FindFirstValue(JwtRegisteredClaimNames.Exp) is string exp
+            ? DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp)).UtcDateTime
+            : DateTime.MinValue;
+
+    public AccessTokenClaims GetAccessTokenClaims()
+    {
+        return new AccessTokenClaims
+        {
+            Permissions = Permissions,
+            Roles = Roles,
+            UserId = UserId,
+            UserProfileId = UserProfileId,
+            ExpiresAt = ExpiresAt,
+        };
+    }
 }
