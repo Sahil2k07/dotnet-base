@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Authentication;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
-using DotnetBase.Authentication.Claims;
 using DotnetBase.Authentication.Configuration;
+using DotnetBase.Contract.Auth.Claims;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,7 +19,7 @@ public sealed class CryptoService : ICryptoService
         _authenticationOptions = authenticationOptions.Value;
     }
 
-    public Task<string> GenerateAccessToken(AccessTokenClaims accessTokenClaims)
+    public Task<(string, DateTime)> GenerateAccessToken(AccessTokenClaims accessTokenClaims)
     {
         var claims = new List<Claim>
         {
@@ -52,23 +54,31 @@ public sealed class CryptoService : ICryptoService
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
+        DateTime expiresAt = DateTime.UtcNow.AddMinutes(
+            _authenticationOptions.AccessTokenExpirationMinutes
+        );
+
         var token = tokenHandler.CreateEncodedJwt(
             _authenticationOptions.JwtIssuer,
             _authenticationOptions.JwtAudience,
             identity,
             null,
-            DateTime.UtcNow.AddMinutes(_authenticationOptions.AccessTokenExpirationMinutes),
+            expiresAt,
             DateTime.UtcNow,
             signingCredentials,
             encryptionCredentials
         );
 
-        return Task.FromResult(token);
+        return Task.FromResult((token, expiresAt));
     }
 
-    public Task<string> GenerateRefreshToken(RefreshTokenClaims refreshTokenClaims)
+    public Task<(string, DateTime)> GenerateRefreshToken(RefreshTokenClaims refreshTokenClaims)
     {
-        var claims = new List<Claim> { new("session_id", refreshTokenClaims.SessionId.ToString()) };
+        var claims = new List<Claim>
+        {
+            new("session_id", refreshTokenClaims.SessionId.ToString()),
+            new("user_role_id", refreshTokenClaims.UserRoleId.ToString()),
+        };
 
         var signingKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_authenticationOptions.JwtSigningSecret)
@@ -90,18 +100,22 @@ public sealed class CryptoService : ICryptoService
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
+        DateTime expiresAt = DateTime.UtcNow.AddDays(
+            _authenticationOptions.RefreshTokenExpirationDays
+        );
+
         var token = tokenHandler.CreateEncodedJwt(
             _authenticationOptions.JwtIssuer,
             _authenticationOptions.JwtAudience,
             identity,
             null,
-            DateTime.UtcNow.AddDays(_authenticationOptions.RefreshTokenExpirationDays),
+            expiresAt,
             DateTime.UtcNow,
             signingCredentials,
             encryptionCredentials
         );
 
-        return Task.FromResult(token);
+        return Task.FromResult((token, expiresAt));
     }
 
     public Task<AccessTokenClaims> GetAccessTokenClaims(string accessToken)
@@ -134,7 +148,11 @@ public sealed class CryptoService : ICryptoService
             ClockSkew = TimeSpan.Zero,
         };
 
-        var principal = tokenHandler.ValidateToken(accessToken, validationParameters, out _);
+        var principal = tokenHandler.ValidateToken(
+            accessToken,
+            validationParameters,
+            out var validatedToken
+        );
 
         var userId = long.Parse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
 
@@ -153,6 +171,7 @@ public sealed class CryptoService : ICryptoService
             ActiveRole = activeRole,
             Roles = roles,
             Permissions = permissions,
+            ExpiresAt = validatedToken.ValidTo,
         };
 
         return Task.FromResult(claims);
@@ -188,11 +207,22 @@ public sealed class CryptoService : ICryptoService
             ClockSkew = TimeSpan.Zero,
         };
 
-        var principal = tokenHandler.ValidateToken(refreshToken, validationParameters, out _);
+        var principal = tokenHandler.ValidateToken(
+            refreshToken,
+            validationParameters,
+            out var validatedToken
+        );
 
         var sessionId = Guid.Parse(principal.FindFirstValue("session_id")!);
 
-        var claims = new RefreshTokenClaims { SessionId = sessionId };
+        var userRoleId = long.Parse(principal.FindFirstValue("user_role_id")!);
+
+        var claims = new RefreshTokenClaims
+        {
+            SessionId = sessionId,
+            UserRoleId = userRoleId,
+            ExpiresAt = validatedToken.ValidTo,
+        };
 
         return Task.FromResult(claims);
     }
@@ -210,5 +240,30 @@ public sealed class CryptoService : ICryptoService
     public bool VerifyPassword(string password, string passwordHash)
     {
         return BCrypt.Net.BCrypt.Verify(password, passwordHash);
+    }
+
+    public string HashRefreshToken(string refreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            throw new AuthenticationException("Refresh token is required.");
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(refreshToken)));
+    }
+
+    public bool VerifyRefreshTokenHash(string refreshToken, string storedTokenHash)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken) || string.IsNullOrWhiteSpace(storedTokenHash))
+        {
+            return false;
+        }
+
+        var incomingTokenHash = HashRefreshToken(refreshToken);
+
+        return CryptographicOperations.FixedTimeEquals(
+            Convert.FromHexString(incomingTokenHash),
+            Convert.FromHexString(storedTokenHash)
+        );
     }
 }

@@ -10,9 +10,9 @@ public class RolePermission : ISoftDelete
     [Key]
     public long Id { get; set; }
 
-    public long RoleId { get; set; }
+    public required long RoleId { get; set; }
 
-    public long PermissionId { get; set; }
+    public required long PermissionId { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

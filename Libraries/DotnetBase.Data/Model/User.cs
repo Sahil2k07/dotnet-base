@@ -18,11 +18,13 @@ public class User : ISoftDelete
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public required DateTime UpdatedAt { get; set; }
+
     public DateTime? DeletedAt { get; set; } = null;
 
     public virtual UserProfile? UserProfile { get; set; }
 
     public virtual ICollection<UserSession>? UserSessions { get; set; }
 
-    public virtual ICollection<Role>? Roles { get; set; }
+    public virtual ICollection<UserRole>? UserRoles { get; set; }
 }

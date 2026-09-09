@@ -1,5 +1,6 @@
 using DotnetBase.Authentication;
 using DotnetBase.Data;
+using DotnetBase.Service;
 using DotnetBase.Shared.Extension;
 using DotnetBase.Shared.Middleware;
 
@@ -15,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddDotnetBaseValidation();
 builder.Services.AddDotnetBaseAuthentication();
 builder.Services.AddDotnetBaseData();
+builder.Services.AddDotnetBaseService();
 
 var app = builder.Build();
 

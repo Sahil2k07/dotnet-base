@@ -1,4 +1,4 @@
-namespace DotnetBase.Authentication.Claims;
+namespace DotnetBase.Contract.Auth.Claims;
 
 public sealed class AccessTokenClaims
 {
@@ -11,4 +11,6 @@ public sealed class AccessTokenClaims
     public required IReadOnlyList<string> Roles { get; set; }
 
     public required IReadOnlyList<string> Permissions { get; set; }
+
+    public DateTime ExpiresAt { get; set; }
 }

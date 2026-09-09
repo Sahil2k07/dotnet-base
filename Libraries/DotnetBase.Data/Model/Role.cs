@@ -21,6 +21,4 @@ public class Role : ISoftDelete
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? DeletedAt { get; set; } = null;
-
-    public virtual ICollection<Permission>? Permissions { get; set; }
 }

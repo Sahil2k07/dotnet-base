@@ -60,8 +60,6 @@ public sealed class DotnetBaseContext : DbContext
         }
 
         #endregion
-
-        modelBuilder.Entity<UserSession>().HasQueryFilter(x => x.User.DeletedAt == null);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
