@@ -10,9 +10,9 @@ public class UserRole : ISoftDelete
     [Key]
     public long Id { get; set; }
 
-    public long UserId { get; set; }
+    public required long UserId { get; set; }
 
-    public long RoleId { get; set; }
+    public required long RoleId { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

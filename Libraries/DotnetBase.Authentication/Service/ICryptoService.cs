@@ -1,12 +1,16 @@
-using DotnetBase.Authentication.Claims;
+using DotnetBase.Contract.Auth.Claims;
 
 namespace DotnetBase.Authentication.Service;
 
 public interface ICryptoService
 {
-    Task<string> GenerateAccessToken(AccessTokenClaims accessTokenClaims);
+    Task<(string accessToken, DateTime expiresAt)> GenerateAccessToken(
+        AccessTokenClaims accessTokenClaims
+    );
 
-    Task<string> GenerateRefreshToken(RefreshTokenClaims refreshTokenClaims);
+    Task<(string refreshToken, DateTime expiresAt)> GenerateRefreshToken(
+        RefreshTokenClaims refreshTokenClaims
+    );
 
     Task<AccessTokenClaims> GetAccessTokenClaims(string accessToken);
 
@@ -15,4 +19,8 @@ public interface ICryptoService
     string GeneratePasswordHash(string password);
 
     bool VerifyPassword(string password, string passwordHash);
+
+    string HashRefreshToken(string refreshToken);
+
+    bool VerifyRefreshTokenHash(string refreshToken, string storedTokenHash);
 }
