@@ -6,8 +6,6 @@ public sealed class AccessTokenClaims
 
     public long UserProfileId { get; set; }
 
-    public required string ActiveRole { get; set; }
-
     public required IReadOnlyList<string> Roles { get; set; }
 
     public required IReadOnlyList<string> Permissions { get; set; }

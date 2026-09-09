@@ -1,3 +1,5 @@
+using DotnetBase.Contract.Auth.Claims;
+
 namespace DotnetBase.Authentication.Service;
 
 public interface ICurrentUser
@@ -5,8 +7,6 @@ public interface ICurrentUser
     long UserId { get; }
 
     long UserProfileId { get; }
-
-    string ActiveRole { get; }
 
     IReadOnlyList<string> Roles { get; }
 
@@ -17,4 +17,6 @@ public interface ICurrentUser
     bool HasPermission(string permission);
 
     bool HasRole(string role);
+
+    AccessTokenClaims GetAccessTokenClaims();
 }

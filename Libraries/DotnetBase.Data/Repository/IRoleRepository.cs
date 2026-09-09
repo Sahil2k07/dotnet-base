@@ -6,8 +6,8 @@ public interface IRoleRepository
 {
     Task<Role?> GetRoleByRoleName(string role, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Permission?>> GetRolePermissionsByRoleId(
-        long roleId,
+    Task<IReadOnlyList<Permission?>> GetPermissionsByUserId(
+        long userId,
         CancellationToken cancellationToken = default
     );
 
@@ -16,8 +16,8 @@ public interface IRoleRepository
         CancellationToken cancellationToken = default
     );
 
-    Task<IReadOnlyList<string>> GetPermissionNamesByRoleId(
-        long roleId,
+    Task<IReadOnlyList<string>> GetPermissionNamesByUserId(
+        long userId,
         CancellationToken cancellationToken = default
     );
 }

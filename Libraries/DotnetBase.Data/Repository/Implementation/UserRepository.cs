@@ -32,6 +32,27 @@ public sealed class UserRepository : IUserRepository
             .SingleOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<User?> GetUserByEmail(
+        string email,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _dbContext
+            .Users.Where(u => u.Email == email)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<User?> GetUserWithUserProfileByEmail(
+        string email,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _dbContext
+            .Users.Include(u => u.UserProfile)
+            .Where(u => u.Email == email)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<User> AddUser(
         string email,
         string passwordHash,

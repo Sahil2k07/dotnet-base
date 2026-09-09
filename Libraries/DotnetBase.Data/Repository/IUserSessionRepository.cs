@@ -11,7 +11,6 @@ public interface IUserSessionRepository
 
     Task<UserSession> AddUserSession(
         long userId,
-        long userRoleId,
         string sessionTokenHash,
         DateTime expiresAt,
         Guid? sessionId = null,
@@ -30,4 +29,6 @@ public interface IUserSessionRepository
     Task DeleteUserSession(Guid sessionId, CancellationToken cancellationToken = default);
 
     Task DeleteUserSession(UserSession userSession, CancellationToken cancellationToken = default);
+
+    Task CleanUpExpiredSessionsByUserId(long userId, CancellationToken cancellationToken = default);
 }

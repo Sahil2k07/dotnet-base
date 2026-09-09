@@ -19,15 +19,14 @@ public sealed class UserSessionRepository : IUserSessionRepository
         CancellationToken cancellationToken = default
     )
     {
-        return await _dbContext
-            .UserSessions.Include(us => us.UserRole)
-                .ThenInclude(ur => ur!.Role)
-            .FirstOrDefaultAsync(us => us.DisplayId == sessionId, cancellationToken);
+        return await _dbContext.UserSessions.FirstOrDefaultAsync(
+            us => us.DisplayId == sessionId,
+            cancellationToken
+        );
     }
 
     public async Task<UserSession> AddUserSession(
         long userId,
-        long userRoleId,
         string sessionTokenHash,
         DateTime expiresAt,
         Guid? sessionId = null,
@@ -37,7 +36,6 @@ public sealed class UserSessionRepository : IUserSessionRepository
         UserSession userSession = new()
         {
             UserId = userId,
-            UserRoleId = userRoleId,
             SessionTokenHash = sessionTokenHash,
             DisplayId = sessionId ?? Guid.NewGuid(),
             ExpiresAt = expiresAt,
@@ -99,5 +97,17 @@ public sealed class UserSessionRepository : IUserSessionRepository
     {
         _dbContext.UserSessions.Remove(userSession);
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task CleanUpExpiredSessionsByUserId(
+        long userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await _dbContext
+            .UserSessions.Where(us =>
+                us.UserId == userId && us.ExpiresAt < DateTime.UtcNow.AddDays(-30)
+            )
+            .ExecuteDeleteAsync(cancellationToken);
     }
 }

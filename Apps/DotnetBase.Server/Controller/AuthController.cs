@@ -21,7 +21,7 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("signup")]
-    [ApiResponse("User signup successful")]
+    [ApiResponse("User signed up successful")]
     [AllowAnonymous]
     public async Task<IActionResult> Signup(
         [FromBody] SignupRequest request,
@@ -34,15 +34,27 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("signin")]
+    [ApiResponse("User signed in successfully")]
     [AllowAnonymous]
-    public async Task<IActionResult> Signin()
+    public async Task<IActionResult> Signin(
+        [FromBody] SigninRequest request,
+        CancellationToken cancellationToken
+    )
     {
-        return Ok();
+        SigninResponse response = await _authService.SigninUser(request, cancellationToken);
+
+        return Ok(response);
     }
 
     [HttpPost("signout")]
-    public async Task<IActionResult> Signout()
+    [ApiResponse("User signed out successfully")]
+    public async Task<IActionResult> Signout(
+        [FromBody] RefreshAccessTokenRequest request,
+        CancellationToken cancellationToken
+    )
     {
+        await _authService.SignoutUser(request.RefreshToken, cancellationToken);
+
         return Ok();
     }
 

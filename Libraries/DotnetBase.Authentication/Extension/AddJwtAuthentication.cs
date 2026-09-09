@@ -71,7 +71,7 @@ public static class JwtAuthenticationExtension
 
                             ClockSkew = TimeSpan.Zero,
 
-                            RoleClaimType = "active_role",
+                            RoleClaimType = "roles",
                             NameClaimType = JwtRegisteredClaimNames.Sub,
                         };
 

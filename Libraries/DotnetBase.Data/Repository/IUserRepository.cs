@@ -8,6 +8,13 @@ public interface IUserRepository
 
     Task<long> GetUserProfileIdByUserId(long userId, CancellationToken cancellationToken = default);
 
+    Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken = default);
+
+    Task<User?> GetUserWithUserProfileByEmail(
+        string email,
+        CancellationToken cancellationToken = default
+    );
+
     Task<User> AddUser(
         string email,
         string passwordHash,

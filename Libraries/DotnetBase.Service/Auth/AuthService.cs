@@ -73,25 +73,19 @@ public sealed class AuthService : IAuthService
                 cancellationToken
             );
 
-            UserRole? userRole = await _userRoleRepository.AddUserRole(
+            await _userRoleRepository.AddUserRole(newUser.Id, Roles.USER, cancellationToken);
+
+            IReadOnlyList<string> permissions = await _roleRepository.GetPermissionNamesByUserId(
                 newUser.Id,
-                Roles.USER,
                 cancellationToken
             );
-
-            IReadOnlyList<Permission?> permissions =
-                await _roleRepository.GetRolePermissionsByRoleId(
-                    userRole.RoleId,
-                    cancellationToken
-                );
 
             (accessToken, _) = await _cryptoService.GenerateAccessToken(
                 new AccessTokenClaims
                 {
                     UserId = newUser.Id,
                     UserProfileId = newUser.UserProfile!.Id,
-                    ActiveRole = Roles.USER,
-                    Permissions = [.. permissions.Where(p => p is not null).Select(p => p!.Name)],
+                    Permissions = permissions,
                     Roles = [Roles.USER],
                 }
             );
@@ -99,18 +93,71 @@ public sealed class AuthService : IAuthService
             Guid sessionId = Guid.NewGuid();
 
             (refreshToken, DateTime expiresAt) = await _cryptoService.GenerateRefreshToken(
-                new RefreshTokenClaims { SessionId = sessionId, UserRoleId = userRole.Id }
+                new RefreshTokenClaims { SessionId = sessionId }
             );
 
             await _userSessionRepository.AddUserSession(
                 newUser.Id,
-                userRole.Id,
                 _cryptoService.HashRefreshToken(refreshToken),
                 expiresAt,
                 sessionId,
                 cancellationToken
             );
         });
+
+        return new SigninResponse { AccessToken = accessToken, RefreshToken = refreshToken };
+    }
+
+    public async Task<SigninResponse> SigninUser(
+        SigninRequest request,
+        CancellationToken cancellationToken = default
+    )
+    {
+        User? user =
+            await _userRepository.GetUserWithUserProfileByEmail(request.Email, cancellationToken)
+            ?? throw new NotFoundException("email not recognized");
+
+        bool isPasswordLegit = _cryptoService.VerifyPassword(request.Password, user.PasswordHash);
+
+        if (!isPasswordLegit)
+            throw new BadRequestException("wrong password");
+
+        IReadOnlyList<string> roles = await _roleRepository.GetRoleNamesByUserId(
+            user.Id,
+            cancellationToken
+        );
+
+        IReadOnlyList<string> permissions = await _roleRepository.GetPermissionNamesByUserId(
+            user.Id,
+            cancellationToken
+        );
+
+        (string accessToken, _) = await _cryptoService.GenerateAccessToken(
+            new AccessTokenClaims
+            {
+                UserId = user.Id,
+                UserProfileId = user.UserProfile!.Id,
+                Permissions = permissions,
+                Roles = roles,
+            }
+        );
+
+        Guid sessionId = Guid.NewGuid();
+
+        (string refreshToken, DateTime expiresAt) = await _cryptoService.GenerateRefreshToken(
+            new RefreshTokenClaims { SessionId = sessionId }
+        );
+
+        await _userSessionRepository.AddUserSession(
+            user.Id,
+            _cryptoService.HashRefreshToken(refreshToken),
+            expiresAt,
+            sessionId,
+            cancellationToken
+        );
+
+        // Let's perform some cleanup here
+        await _userSessionRepository.CleanUpExpiredSessionsByUserId(user.Id, cancellationToken);
 
         return new SigninResponse { AccessToken = accessToken, RefreshToken = refreshToken };
     }
@@ -149,15 +196,14 @@ public sealed class AuthService : IAuthService
             cancellationToken
         );
 
-        IReadOnlyList<string> permissionNames = await _roleRepository.GetPermissionNamesByRoleId(
-            userSession.UserRole!.Role!.Id,
+        IReadOnlyList<string> permissionNames = await _roleRepository.GetPermissionNamesByUserId(
+            userSession.UserId,
             cancellationToken
         );
 
         (string newAccessToken, _) = await _cryptoService.GenerateAccessToken(
             new AccessTokenClaims
             {
-                ActiveRole = userSession.UserRole!.Role!.Name,
                 Permissions = permissionNames,
                 UserId = userSession.UserId,
                 Roles = roleNames,
@@ -176,5 +222,29 @@ public sealed class AuthService : IAuthService
         await _userSessionRepository.UpdateUserSession(userSession, cancellationToken);
 
         return new SigninResponse { AccessToken = newAccessToken, RefreshToken = newRefreshToken };
+    }
+
+    public async Task SignoutUser(
+        string refreshToken,
+        CancellationToken cancellationToken = default
+    )
+    {
+        RefreshTokenClaims refreshTokenClaims = await _cryptoService.GetRefreshTokenClaims(
+            refreshToken
+        );
+
+        UserSession? userSession =
+            await _userSessionRepository.GetUserSession(
+                refreshTokenClaims.SessionId,
+                cancellationToken
+            ) ?? throw new AuthenticationException("malformed refresh token");
+
+        await _userSessionRepository.DeleteUserSession(userSession, cancellationToken);
+
+        // Let's perform some cleanup here
+        await _userSessionRepository.CleanUpExpiredSessionsByUserId(
+            userSession.UserId,
+            cancellationToken
+        );
     }
 }

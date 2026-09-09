@@ -21,4 +21,6 @@ public sealed class Permission : ISoftDelete
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? DeletedAt { get; set; } = null;
+
+    public ICollection<RolePermission>? RolePermissions { get; set; }
 }
