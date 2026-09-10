@@ -4,7 +4,7 @@ namespace DotnetBase.Data.Repository;
 
 public interface IUserSessionRepository
 {
-    Task<UserSession?> GetUserSession(
+    Task<UserSession?> GetUserSessionByUserSessionId(
         Guid sessionId,
         CancellationToken cancellationToken = default
     );
@@ -17,7 +17,7 @@ public interface IUserSessionRepository
         CancellationToken cancellationToken = default
     );
 
-    Task<UserSession> UpdateUserSession(
+    Task<UserSession> UpdateUserSessionByUserSessionId(
         Guid sessionId,
         string sessionTokenHash,
         DateTime expiresAt,
@@ -26,7 +26,10 @@ public interface IUserSessionRepository
 
     Task UpdateUserSession(UserSession userSession, CancellationToken cancellationToken = default);
 
-    Task DeleteUserSession(Guid sessionId, CancellationToken cancellationToken = default);
+    Task DeleteUserSessionByUserSessionId(
+        Guid sessionId,
+        CancellationToken cancellationToken = default
+    );
 
     Task DeleteUserSession(UserSession userSession, CancellationToken cancellationToken = default);
 

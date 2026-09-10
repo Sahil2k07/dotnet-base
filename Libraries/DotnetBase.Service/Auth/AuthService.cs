@@ -172,7 +172,7 @@ public sealed class AuthService : IAuthService
         );
 
         UserSession? userSession =
-            await _userSessionRepository.GetUserSession(
+            await _userSessionRepository.GetUserSessionByUserSessionId(
                 refreshTokenClaims.SessionId,
                 cancellationToken
             ) ?? throw new AuthenticationException("malformed refresh token");
@@ -234,7 +234,7 @@ public sealed class AuthService : IAuthService
         );
 
         UserSession? userSession =
-            await _userSessionRepository.GetUserSession(
+            await _userSessionRepository.GetUserSessionByUserSessionId(
                 refreshTokenClaims.SessionId,
                 cancellationToken
             ) ?? throw new AuthenticationException("malformed refresh token");

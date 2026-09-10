@@ -14,7 +14,7 @@ public sealed class UserSessionRepository : IUserSessionRepository
         _dbContext = dbContext;
     }
 
-    public async Task<UserSession?> GetUserSession(
+    public async Task<UserSession?> GetUserSessionByUserSessionId(
         Guid sessionId,
         CancellationToken cancellationToken = default
     )
@@ -47,7 +47,7 @@ public sealed class UserSessionRepository : IUserSessionRepository
         return userSession;
     }
 
-    public async Task<UserSession> UpdateUserSession(
+    public async Task<UserSession> UpdateUserSessionByUserSessionId(
         Guid sessionId,
         string sessionTokenHash,
         DateTime expiresAt,
@@ -55,7 +55,7 @@ public sealed class UserSessionRepository : IUserSessionRepository
     )
     {
         UserSession? userSession =
-            await GetUserSession(sessionId, cancellationToken)
+            await GetUserSessionByUserSessionId(sessionId, cancellationToken)
             ?? throw new AuthenticationException("invalid session id");
 
         userSession.SessionTokenHash = sessionTokenHash;
@@ -76,12 +76,15 @@ public sealed class UserSessionRepository : IUserSessionRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeleteUserSession(
+    public async Task DeleteUserSessionByUserSessionId(
         Guid sessionId,
         CancellationToken cancellationToken = default
     )
     {
-        UserSession? userSession = await GetUserSession(sessionId, cancellationToken);
+        UserSession? userSession = await GetUserSessionByUserSessionId(
+            sessionId,
+            cancellationToken
+        );
 
         if (userSession is null)
             return;
