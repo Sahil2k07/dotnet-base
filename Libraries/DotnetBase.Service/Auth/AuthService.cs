@@ -61,7 +61,7 @@ public sealed class AuthService : IAuthService
 
         await _sqlExecutor.ExecuteInTransactionAsync(async cancellationToken =>
         {
-            User newUser = await _userRepository.AddUser(
+            var newUser = await _userRepository.AddUser(
                 request.Email,
                 passwordHash,
                 request.FirstName,
@@ -75,18 +75,11 @@ public sealed class AuthService : IAuthService
 
             await _userRoleRepository.AddUserRole(newUser.Id, Roles.USER, cancellationToken);
 
-            IReadOnlyList<string> permissions = await _roleRepository.GetPermissionNamesByUserId(
-                newUser.Id,
-                cancellationToken
-            );
-
             (accessToken, _) = await _cryptoService.GenerateAccessToken(
                 new AccessTokenClaims
                 {
                     UserId = newUser.Id,
                     UserProfileId = newUser.UserProfile!.Id,
-                    Permissions = permissions,
-                    Roles = [Roles.USER],
                 }
             );
 
@@ -113,7 +106,7 @@ public sealed class AuthService : IAuthService
         CancellationToken cancellationToken = default
     )
     {
-        User? user =
+        var user =
             await _userRepository.GetUserWithUserProfileByEmail(request.Email, cancellationToken)
             ?? throw new NotFoundException("email not recognized");
 
@@ -122,24 +115,8 @@ public sealed class AuthService : IAuthService
         if (!isPasswordLegit)
             throw new BadRequestException("wrong password");
 
-        IReadOnlyList<string> roles = await _roleRepository.GetRoleNamesByUserId(
-            user.Id,
-            cancellationToken
-        );
-
-        IReadOnlyList<string> permissions = await _roleRepository.GetPermissionNamesByUserId(
-            user.Id,
-            cancellationToken
-        );
-
         (string accessToken, _) = await _cryptoService.GenerateAccessToken(
-            new AccessTokenClaims
-            {
-                UserId = user.Id,
-                UserProfileId = user.UserProfile!.Id,
-                Permissions = permissions,
-                Roles = roles,
-            }
+            new AccessTokenClaims { UserId = user.Id, UserProfileId = user.UserProfile!.Id }
         );
 
         Guid sessionId = Guid.NewGuid();
@@ -191,22 +168,10 @@ public sealed class AuthService : IAuthService
         if (!_cryptoService.VerifyRefreshTokenHash(refreshToken, userSession.SessionTokenHash))
             throw new AuthenticationException("invalid refresh token");
 
-        IReadOnlyList<string> roleNames = await _roleRepository.GetRoleNamesByUserId(
-            userSession.UserId,
-            cancellationToken
-        );
-
-        IReadOnlyList<string> permissionNames = await _roleRepository.GetPermissionNamesByUserId(
-            userSession.UserId,
-            cancellationToken
-        );
-
         (string newAccessToken, _) = await _cryptoService.GenerateAccessToken(
             new AccessTokenClaims
             {
-                Permissions = permissionNames,
                 UserId = userSession.UserId,
-                Roles = roleNames,
                 UserProfileId = await _userRepository.GetUserProfileIdByUserId(userSession.UserId),
             }
         );

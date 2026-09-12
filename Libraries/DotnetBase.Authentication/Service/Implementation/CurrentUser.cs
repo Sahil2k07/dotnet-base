@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using DotnetBase.Contract.Auth.Claims;
+using DotnetBase.Data.Repository;
 using Microsoft.AspNetCore.Http;
 
 namespace DotnetBase.Authentication.Service.Implementation;
@@ -9,9 +10,12 @@ public sealed class CurrentUser : ICurrentUser
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public CurrentUser(IHttpContextAccessor httpContextAccessor)
+    private readonly IRoleRepository _roleRepository;
+
+    public CurrentUser(IHttpContextAccessor httpContextAccessor, IRoleRepository roleRepository)
     {
         _httpContextAccessor = httpContextAccessor;
+        _roleRepository = roleRepository;
     }
 
     private ClaimsPrincipal User => _httpContextAccessor.HttpContext?.User ?? new ClaimsPrincipal();
@@ -22,16 +26,6 @@ public sealed class CurrentUser : ICurrentUser
 
     public long UserProfileId => long.Parse(User.FindFirstValue("user_profile_id")!);
 
-    public IReadOnlyList<string> Roles => [.. User.FindAll("roles").Select(claim => claim.Value)];
-
-    public IReadOnlyList<string> Permissions =>
-        [.. User.FindAll("permissions").Select(claim => claim.Value)];
-
-    public bool HasRole(string role) => Roles.Contains(role, StringComparer.OrdinalIgnoreCase);
-
-    public bool HasPermission(string permission) =>
-        Permissions.Contains(permission, StringComparer.OrdinalIgnoreCase);
-
     public DateTime ExpiresAt =>
         User.FindFirstValue(JwtRegisteredClaimNames.Exp) is string exp
             ? DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp)).UtcDateTime
@@ -41,11 +35,29 @@ public sealed class CurrentUser : ICurrentUser
     {
         return new AccessTokenClaims
         {
-            Permissions = Permissions,
-            Roles = Roles,
             UserId = UserId,
             UserProfileId = UserProfileId,
             ExpiresAt = ExpiresAt,
         };
+    }
+
+    public async Task<IReadOnlyList<string>> GetRoles()
+    {
+        return await _roleRepository.GetRoleNamesByUserId(UserId);
+    }
+
+    public async Task<bool> HasRole(string role)
+    {
+        return await _roleRepository.HasRoleByUserIdAndRoleNameName(UserId, role);
+    }
+
+    public async Task<IReadOnlyList<string>> GetPermissions()
+    {
+        return await _roleRepository.GetPermissionNamesByUserId(UserId);
+    }
+
+    public async Task<bool> HasPermission(string permission)
+    {
+        return await _roleRepository.HasRoleByUserIdAndRoleNameName(UserId, permission);
     }
 }

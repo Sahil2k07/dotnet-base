@@ -1,5 +1,5 @@
-using DotnetBase.Authentication.Service;
-using DotnetBase.Contract.Auth.Claims;
+using DotnetBase.Contract.User.Response;
+using DotnetBase.Service.User;
 using DotnetBase.Shared.Attribute;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,19 +12,19 @@ namespace DotnetBase.Server.Controller;
 [Route("api/v1/[controller]")]
 public sealed class UserController : ControllerBase
 {
-    private readonly ICurrentUser _currentUser;
+    private readonly IUserService _userService;
 
-    public UserController(ICurrentUser currentUser)
+    public UserController(IUserService userService)
     {
-        _currentUser = currentUser;
+        _userService = userService;
     }
 
     [HttpGet("me")]
     [ApiResponse("User data fetched successfully")]
     public async Task<IActionResult> Me()
     {
-        AccessTokenClaims accessTokenClaims = _currentUser.GetAccessTokenClaims();
+        UserInformationResponse userInfo = await _userService.GetCurrentUserInformation();
 
-        return Ok(accessTokenClaims);
+        return Ok(userInfo);
     }
 }

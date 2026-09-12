@@ -27,12 +27,6 @@ public sealed class CryptoService : ICryptoService
             new("user_profile_id", accessTokenClaims.UserProfileId.ToString()),
         };
 
-        claims.AddRange(accessTokenClaims.Roles.Select(role => new Claim("roles", role)));
-
-        claims.AddRange(
-            accessTokenClaims.Permissions.Select(permission => new Claim("permissions", permission))
-        );
-
         var signingKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_authenticationOptions.JwtSigningSecret)
         );
@@ -153,16 +147,10 @@ public sealed class CryptoService : ICryptoService
 
         var userProfileId = long.Parse(principal.FindFirstValue("user_profile_id")!);
 
-        var roles = principal.FindAll("roles").Select(x => x.Value).ToList();
-
-        var permissions = principal.FindAll("permissions").Select(x => x.Value).ToList();
-
         var claims = new AccessTokenClaims
         {
             UserId = userId,
             UserProfileId = userProfileId,
-            Roles = roles,
-            Permissions = permissions,
             ExpiresAt = validatedToken.ValidTo,
         };
 

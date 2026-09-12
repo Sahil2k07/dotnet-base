@@ -8,15 +8,15 @@ public interface ICurrentUser
 
     long UserProfileId { get; }
 
-    IReadOnlyList<string> Roles { get; }
-
-    IReadOnlyList<string> Permissions { get; }
-
     bool IsAuthenticated { get; }
 
-    bool HasPermission(string permission);
-
-    bool HasRole(string role);
-
     AccessTokenClaims GetAccessTokenClaims();
+
+    Task<IReadOnlyList<string>> GetRoles();
+
+    Task<bool> HasRole(string role);
+
+    Task<IReadOnlyList<string>> GetPermissions();
+
+    Task<bool> HasPermission(string permission);
 }

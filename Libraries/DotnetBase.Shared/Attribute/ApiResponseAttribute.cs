@@ -50,6 +50,11 @@ public sealed class ApiResponseAttribute : ActionFilterAttribute
 
         var properties = value.GetType().GetProperties();
 
+        if (properties.Length == 0)
+        {
+            return false;
+        }
+
         return properties.Any(p =>
                 string.Equals(p.Name, "Success", StringComparison.OrdinalIgnoreCase)
             )
