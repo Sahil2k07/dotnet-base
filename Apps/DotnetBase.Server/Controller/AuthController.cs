@@ -58,7 +58,7 @@ public sealed class AuthController : ControllerBase
         return Ok();
     }
 
-    [HttpPost("refresh-token")]
+    [HttpPost("refresh")]
     [AllowAnonymous]
     public async Task<IActionResult> RefreshToken(
         [FromBody] RefreshAccessTokenRequest request,

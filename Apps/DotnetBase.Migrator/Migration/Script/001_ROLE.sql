@@ -3,9 +3,9 @@ USING
 (
     VALUES
         (N'SUPER_ADMIN', N'Full system access'),
-        (N'ADMIN',      N'Administrative access'),
-        (N'MANAGER',    N'Manager access'),
-        (N'USER',       N'Default user role')
+        (N'ADMIN',       N'Administrative access'),
+        (N'MANAGER',     N'Manager access'),
+        (N'USER',        N'Default user role')
 ) AS Source (Name, Description)
 ON Target.Name = Source.Name
 AND Target.DeletedAt IS NULL

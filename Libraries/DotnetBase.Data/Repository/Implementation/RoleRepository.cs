@@ -23,6 +23,34 @@ public sealed class RoleRepository : IRoleRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<string>> GetRoleNamesByUserId(
+        long userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return await _dbContext
+            .UserRoles.Include(ur => ur.Role)
+            .Where(ur => ur.UserId == userId && ur.Role!.IsActive == true)
+            .Select(r => r.Role!.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<bool> HasRoleByUserIdAndRoleNameName(
+        long userId,
+        string roleName,
+        CancellationToken cancellationToken = default
+    )
+    {
+        IQueryable<Role> query =
+            from ur in _dbContext.UserRoles
+            join rp in _dbContext.RolePermissions on ur.RoleId equals rp.RoleId
+            join r in _dbContext.Roles on ur.RoleId equals r.Id
+            where ur.UserId == userId && r.Name == roleName && r.IsActive
+            select r;
+
+        return await query.AnyAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Permission?>> GetPermissionsByUserId(
         long userId,
         CancellationToken cancellationToken = default
@@ -31,8 +59,9 @@ public sealed class RoleRepository : IRoleRepository
         IQueryable<Permission> query =
             from ur in _dbContext.UserRoles
             join rp in _dbContext.RolePermissions on ur.RoleId equals rp.RoleId
+            join r in _dbContext.Roles on ur.RoleId equals r.Id
             join p in _dbContext.Permissions on rp.PermissionId equals p.Id
-            where ur.UserId == userId
+            where ur.UserId == userId && r.IsActive == true && p.IsActive == true
             select p;
 
         return await query.Distinct().ToListAsync(cancellationToken);
@@ -46,22 +75,28 @@ public sealed class RoleRepository : IRoleRepository
         IQueryable<string> query =
             from ur in _dbContext.UserRoles
             join rp in _dbContext.RolePermissions on ur.RoleId equals rp.RoleId
+            join r in _dbContext.Roles on ur.RoleId equals r.Id
             join p in _dbContext.Permissions on rp.PermissionId equals p.Id
-            where ur.UserId == userId
+            where ur.UserId == userId && r.IsActive == true && p.IsActive == true
             select p.Name;
 
         return await query.Distinct().ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<string>> GetRoleNamesByUserId(
+    public async Task<bool> HasPermissionByUserIdAndPermissionName(
         long userId,
+        string permissionName,
         CancellationToken cancellationToken = default
     )
     {
-        return await _dbContext
-            .UserRoles.Include(r => r.Role)
-            .Where(r => r.UserId == userId)
-            .Select(r => r.Role!.Name)
-            .ToListAsync(cancellationToken);
+        IQueryable<Permission> query =
+            from ur in _dbContext.UserRoles
+            join rp in _dbContext.RolePermissions on ur.RoleId equals rp.RoleId
+            join r in _dbContext.Roles on ur.RoleId equals r.Id
+            join p in _dbContext.Permissions on rp.PermissionId equals p.Id
+            where ur.UserId == userId && p.Name == permissionName && r.IsActive && p.IsActive
+            select p;
+
+        return await query.AnyAsync(cancellationToken);
     }
 }

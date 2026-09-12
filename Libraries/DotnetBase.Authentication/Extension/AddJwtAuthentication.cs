@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Text;
+using DotnetBase.Authentication.Authorization.Requirement;
 using DotnetBase.Authentication.Configuration;
 using DotnetBase.Contract.Common;
 using DotnetBase.Shared.Constant;
@@ -32,7 +33,11 @@ public static class JwtAuthenticationExtension
                 {
                     options.AddPolicy(
                         permission,
-                        policy => policy.RequireClaim("permissions", permission)
+                        policy =>
+                        {
+                            policy.RequireAuthenticatedUser();
+                            policy.AddRequirements(new PermissionRequirement(permission));
+                        }
                     );
                 }
             });
@@ -71,7 +76,6 @@ public static class JwtAuthenticationExtension
 
                             ClockSkew = TimeSpan.Zero,
 
-                            RoleClaimType = "roles",
                             NameClaimType = JwtRegisteredClaimNames.Sub,
                         };
 
