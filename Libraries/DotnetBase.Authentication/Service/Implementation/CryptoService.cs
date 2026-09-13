@@ -109,7 +109,7 @@ public sealed class CryptoService : ICryptoService
 
     public Task<AccessTokenClaims> GetAccessTokenClaims(string accessToken)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
 
         var signingKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_authenticationOptions.JwtSigningSecret)
@@ -166,7 +166,7 @@ public sealed class CryptoService : ICryptoService
 
     public Task<RefreshTokenClaims> GetRefreshTokenClaims(string refreshToken)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
+        var tokenHandler = new JwtSecurityTokenHandler { MapInboundClaims = false };
 
         var signingKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(_authenticationOptions.JwtSigningSecret)

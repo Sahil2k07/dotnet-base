@@ -58,6 +58,6 @@ public sealed class CurrentUser : ICurrentUser
 
     public async Task<bool> HasPermission(string permission)
     {
-        return await _roleRepository.HasRoleByUserIdAndRoleNameName(UserId, permission);
+        return await _roleRepository.HasPermissionByUserIdAndPermissionName(UserId, permission);
     }
 }
