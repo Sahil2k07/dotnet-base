@@ -1,10 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using DotnetBase.Authentication.Configuration;
 using DotnetBase.Contract.Auth.Claims;
+using DotnetBase.Shared.Exceptions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -137,24 +137,31 @@ public sealed class CryptoService : ICryptoService
             ClockSkew = TimeSpan.Zero,
         };
 
-        var principal = tokenHandler.ValidateToken(
-            accessToken,
-            validationParameters,
-            out var validatedToken
-        );
-
-        var userId = long.Parse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
-
-        var userProfileId = long.Parse(principal.FindFirstValue("user_profile_id")!);
-
-        var claims = new AccessTokenClaims
+        try
         {
-            UserId = userId,
-            UserProfileId = userProfileId,
-            ExpiresAt = validatedToken.ValidTo,
-        };
+            var principal = tokenHandler.ValidateToken(
+                accessToken,
+                validationParameters,
+                out var validatedToken
+            );
 
-        return Task.FromResult(claims);
+            var userId = long.Parse(principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
+
+            var userProfileId = long.Parse(principal.FindFirstValue("user_profile_id")!);
+
+            var claims = new AccessTokenClaims
+            {
+                UserId = userId,
+                UserProfileId = userProfileId,
+                ExpiresAt = validatedToken.ValidTo,
+            };
+
+            return Task.FromResult(claims);
+        }
+        catch (Exception)
+        {
+            throw new AuthenticationException("malformed token");
+        }
     }
 
     public Task<RefreshTokenClaims> GetRefreshTokenClaims(string refreshToken)
@@ -187,21 +194,28 @@ public sealed class CryptoService : ICryptoService
             ClockSkew = TimeSpan.Zero,
         };
 
-        var principal = tokenHandler.ValidateToken(
-            refreshToken,
-            validationParameters,
-            out var validatedToken
-        );
-
-        var sessionId = Guid.Parse(principal.FindFirstValue("session_id")!);
-
-        var claims = new RefreshTokenClaims
+        try
         {
-            SessionId = sessionId,
-            ExpiresAt = validatedToken.ValidTo,
-        };
+            var principal = tokenHandler.ValidateToken(
+                refreshToken,
+                validationParameters,
+                out var validatedToken
+            );
 
-        return Task.FromResult(claims);
+            var sessionId = Guid.Parse(principal.FindFirstValue("session_id")!);
+
+            var claims = new RefreshTokenClaims
+            {
+                SessionId = sessionId,
+                ExpiresAt = validatedToken.ValidTo,
+            };
+
+            return Task.FromResult(claims);
+        }
+        catch (Exception)
+        {
+            throw new AuthenticationException("malformed token");
+        }
     }
 
     public string GeneratePasswordHash(string password)

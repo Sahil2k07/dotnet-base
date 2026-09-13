@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using DotnetBase.Contract.Auth.Claims;
 using DotnetBase.Data.Context;
 using DotnetBase.Data.Model;
 using DotnetBase.Shared.Exceptions;
