@@ -6,14 +6,18 @@ public sealed class SignupRequest
 {
     [EmailAddress]
     [MaxLength(100)]
+    [Required]
     public required string Email { get; set; }
 
+    [Required]
     public required string Password { get; set; }
 
     [MaxLength(50)]
+    [Required]
     public required string FirstName { get; set; }
 
     [MaxLength(50)]
+    [Required]
     public required string LastName { get; set; }
 
     [MaxLength(20)]

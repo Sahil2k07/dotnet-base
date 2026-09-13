@@ -10,4 +10,8 @@
     <Project Path="Libraries/DotnetBase.Service/DotnetBase.Service.csproj" />
     <Project Path="Libraries/DotnetBase.Shared/DotnetBase.Shared.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/DotnetBase.Server.IntegrationTest/DotnetBase.Server.IntegrationTest.csproj" />
+    <Project Path="Tests/DotnetBase.Server.UnitTest/DotnetBase.Server.UnitTest.csproj" />
+  </Folder>
 </Solution>
