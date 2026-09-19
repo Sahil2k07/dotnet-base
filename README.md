@@ -33,7 +33,6 @@
 ```bash
 cd Apps/DotnetBase.Server
 dotnet run
-
 ```
 
 ### Run Migrations
@@ -41,7 +40,6 @@ dotnet run
 ```bash
 cd Apps/DotnetBase.Migrator
 dotnet run
-
 ```
 
 Make sure the required database connection settings are configured before running the migrator.
@@ -52,14 +50,12 @@ Build the Docker image:
 
 ```bash
 docker build -t dotnet-base .
-
 ```
 
 Run the container:
 
 ```bash
 docker run -p 5000:5000 dotnet-base
-
 ```
 
 ## Makefile
@@ -67,8 +63,8 @@ docker run -p 5000:5000 dotnet-base
 The repository includes a Makefile for common development commands.
 
 ```bash
-make
-
+make migrate
+make run
 ```
 
 Check the Makefile for the available commands.
@@ -79,7 +75,6 @@ The project includes setup for unit tests and integration tests.
 
 ```bash
 dotnet test
-
 ```
 
 ## OpenAPI / Swagger
@@ -90,14 +85,12 @@ Swagger UI:
 
 ```text
 /swagger
-
 ```
 
 OpenAPI document:
 
 ```text
 /openapi/v1.json
-
 ```
 
 Swagger can be used for exploring endpoints and testing API requests, while Postman can be used for more complete authenticated API workflows.
