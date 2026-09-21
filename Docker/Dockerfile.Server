@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+
+WORKDIR /src
+
+COPY Libraries/DotnetBase.Authentication/DotnetBase.Authentication.csproj Libraries/DotnetBase.Authentication/
+COPY Libraries/DotnetBase.Contract/DotnetBase.Contract.csproj Libraries/DotnetBase.Contract/
+COPY Libraries/DotnetBase.Data/DotnetBase.Data.csproj Libraries/DotnetBase.Data/
+COPY Libraries/DotnetBase.Service/DotnetBase.Service.csproj Libraries/DotnetBase.Service/
+COPY Libraries/DotnetBase.Shared/DotnetBase.Shared.csproj Libraries/DotnetBase.Shared/
+COPY Apps/DotnetBase.Server/DotnetBase.Server.csproj Apps/DotnetBase.Server/
+
+RUN dotnet restore Apps/DotnetBase.Server/DotnetBase.Server.csproj
+
+COPY Libraries/ Libraries/
+COPY Apps/DotnetBase.Server/ Apps/DotnetBase.Server/
+
+RUN dotnet publish Apps/DotnetBase.Server/DotnetBase.Server.csproj \
+    --configuration Release \
+    --output /app/publish \
+    --no-restore \
+    --no-self-contained
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS runtime
+
+WORKDIR /app
+
+COPY --from=build /app/publish/ .
+
+ENTRYPOINT ["dotnet", "DotnetBase.Server.dll"]
