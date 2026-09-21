@@ -1,0 +1,12 @@
+**/bin/
+**/obj/
+.git
+*.md
+*.env
+LICENSE
+Makefile
+.github
+.vs
+.vscode
+.gitignore
+dotnet-tools.json
