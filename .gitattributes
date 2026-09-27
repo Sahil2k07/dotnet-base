@@ -1,0 +1,7 @@
+# Treat all SQL files as T-SQL
+*.sql linguist-detectable=true
+*.sql linguist-language=TSQL
+
+# Treat Dockerfile and files beginning with Dockerfile as Docker
+Dockerfile* linguist-detectable=true
+Dockerfile* linguist-language=Docker
